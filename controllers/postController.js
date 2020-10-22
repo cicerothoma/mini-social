@@ -2,10 +2,12 @@ const Post = require('./../models/postModel');
 const catchAsync = require('./../utils/catchAsync');
 
 exports.getAllPost = catchAsync(async (req, res, next) => {
-  //   const posts = await Post.find();
-
+  const posts = await Post.find();
   res.status(200).json({
-    message: 'Successfull',
+    status: 'success',
+    data: {
+      data: posts,
+    },
   });
 });
 

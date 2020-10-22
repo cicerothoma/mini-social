@@ -2,26 +2,27 @@ const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: [true, 'Post Must Belong To A User'],
     },
-    body: {
+    feeling: String,
+    message: {
       type: String,
-      required: true,
-      minlength: [10, 'Body Must be above 10 characters'],
-    },
-    images: [String],
-    slug: {
-      type: String,
+      required: [true, 'Post Must Contain Message'],
+      minlength: [10, 'Post Must Be Above 10 Characters'],
       trim: true,
     },
     createdAt: {
       type: Date,
-      required: true,
+      required: [true, 'TimeStamp Is Required'],
       default: Date.now(),
+      select: false,
     },
+    likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    images: [String],
+    comment: [{ type: mongoose.Schema.ObjectId, ref: 'Comment' }],
   },
   {
     toJSON: {
@@ -35,4 +36,4 @@ const postSchema = new mongoose.Schema(
 
 const Post = mongoose.model('Post', postSchema, 'post');
 
-module.export = Post;
+module.exports = Post;
