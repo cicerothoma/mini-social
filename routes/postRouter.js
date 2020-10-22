@@ -8,4 +8,8 @@ router
   .get(postController.getAllPost)
   .post(postController.createPost);
 
+router
+  .route('/:id')
+  .patch(postController.updatePost)
+  .delete(postController.deletePost);
 module.exports = router;
