@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -69,6 +70,21 @@ const userSchema = new mongoose.Schema(
     },
   }
 );
+// Documeent Middleware
+userSchema.pre('save', async function (next) {
+  // 1) Hash Password
+  this.password = await bcrypt.hash(this.password, 12);
+  // 2) Remove confirmPassword field
+  this.confirmPassword = undefined;
+  next();
+});
+
+// Query Middleware
+
+userSchema.pre(/^find/, function (next) {
+  this.select('-__v');
+  next();
+});
 
 const User = mongoose.model('User', userSchema, 'users');
 
