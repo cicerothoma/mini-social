@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
     bio: String,
     role: {
       type: String,
+      default: 'user',
       enum: ['user', 'admin'],
       message: 'User role must either be "user" or "admin"',
     },
@@ -43,7 +44,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       minlength: 8,
-      select: false,
+      //   select: false,
     },
     confirmPassword: {
       type: String,
