@@ -41,7 +41,7 @@ exports.createPost = catchAsync(async (req, res, next) => {
 
 exports.updatePost = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  req.body.createdAt = Date.now();
+  req.body.timeStamp = Date.now();
   const post = await Post.findByIdAndUpdate(id, req.body, {
     new: true,
     runValidators: true,

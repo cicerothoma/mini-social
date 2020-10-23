@@ -14,7 +14,7 @@ const postSchema = new mongoose.Schema(
       minlength: [10, 'Post Must Be Above 10 Characters'],
       trim: true,
     },
-    createdAt: {
+    timeStamp: {
       type: Date,
       required: [true, 'TimeStamp Is Required'],
       default: Date.now(),
