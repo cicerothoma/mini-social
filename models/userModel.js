@@ -58,6 +58,7 @@ const userSchema = new mongoose.Schema(
         message: 'Password and Confirm Password Fields do not match',
       },
     },
+    passwordChangedAt: Date,
     followers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
@@ -86,9 +87,24 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
-// Instance Method
+// Instance Methods
 userSchema.methods.correctPassword = async (plainPassword, hashedPassword) => {
   return await bcrypt.compare(plainPassword, hashedPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    // Convert the pasword changed time to timestamp
+    // The Reason why we divide by 1000 is because the changedTimestamp is in milliseconds while
+    // the JWTTimestamp is in seconds so we need to make sure they're both in the same format
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  // False means the password has not been changed
+  return false;
 };
 
 const User = mongoose.model('User', userSchema, 'users');

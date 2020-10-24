@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const postRoute = require('./routes/postRouter');
 const userRoute = require('./routes/userRouter');
 const globalErrorHandler = require('./controllers/errorController');
@@ -12,6 +13,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 // MiddleWare for getting the data sent in the request body
 app.use(express.json());
+// Middleware for parsing cookies
+
+app.use(cookieParser());
 
 // Routes
 app.use('/api/v1/posts', postRoute);
