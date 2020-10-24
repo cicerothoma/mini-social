@@ -86,6 +86,11 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
+// Instance Method
+userSchema.methods.correctPassword = async (plainPassword, hashedPassword) => {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+};
+
 const User = mongoose.model('User', userSchema, 'users');
 
 module.exports = User;

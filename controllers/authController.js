@@ -42,12 +42,15 @@ exports.login = catchAsync(async (req, res, next) => {
       '+password'
     );
 
+    // Check if user exists and password is correct
+    if (!user || !(await user.correctPassword(password, user.password))) {
+      return next(new AppError('Username/Email or password is incorrect', 400));
+    }
+    const token = signToken(user._id);
+
     res.status(200).json({
       status: 'success',
-      message: 'Login successfully',
-      data: {
-        data: user,
-      },
+      token,
     });
   } else {
     return next(new AppError('Please provide email or username and password'));
