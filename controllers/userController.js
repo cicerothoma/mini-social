@@ -18,12 +18,23 @@ exports.createUser = (req, res, next) => {
     message: 'This route is not yet implemented',
   });
 };
-exports.updateUser = (req, res, next) => {
-  res.status(200).json({
-    status: 'fail',
-    message: 'This route is not yet implemented',
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
   });
-};
+
+  if (!updatedUser) {
+    return next(new AppError(`Can't find user with id: ${id}`, 400));
+  }
+  res.status(200).json({
+    status: 'status',
+    data: {
+      data: updatedUser,
+    },
+  });
+});
 exports.getUser = (req, res, next) => {
   res.status(200).json({
     status: 'fail',

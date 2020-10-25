@@ -9,6 +9,12 @@ router.route('/login').post(authController.login);
 
 router.route('/').get(userController.getAllUsers);
 
-router.route('/:id').delete(userController.deleteUser);
+router.use(authController.protect);
+router.use(authController.restrictTo('admin'));
+
+router
+  .route('/:id')
+  .delete(userController.deleteUser)
+  .patch(userController.updateUser);
 
 module.exports = router;
