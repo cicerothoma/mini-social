@@ -10,7 +10,7 @@ router.route('/login').post(authController.login);
 router.route('/').get(userController.getAllUsers);
 
 router.use(authController.protect);
-router.use(authController.restrictTo('admin'));
+// router.use(authController.restrictTo('admin'));
 
 router
   .route('/:id')

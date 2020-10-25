@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema(
     toObject: {
       virtuals: true,
     },
+    strict: 'throw',
   }
 );
 // Documeent Middleware

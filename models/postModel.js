@@ -14,11 +14,13 @@ const postSchema = new mongoose.Schema(
       minlength: [10, 'Post Must Be Above 10 Characters'],
       trim: true,
     },
-    timeStamp: {
+    createdAt: {
       type: Date,
       required: [true, 'TimeStamp Is Required'],
       default: Date.now(),
+      immutable: true,
     },
+    updatedAt: Date,
     likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
     images: [String],
     comment: [{ type: mongoose.Schema.ObjectId, ref: 'Comment' }],
@@ -30,6 +32,7 @@ const postSchema = new mongoose.Schema(
     toObject: {
       virtuals: true,
     },
+    strict: 'throw',
   }
 );
 
