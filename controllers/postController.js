@@ -74,12 +74,10 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     if (!post) {
       return postError(post, next, `Can't find post with id: ${id}`);
     }
-    console.log({ postUser: post.user, userId: req.user._id });
-    console.log(typeof String(post.user), typeof String(req.user._id));
-    // Reason for this bug is cause they're both objects instead of strings
-    if (post.user !== req.user._id) {
+    if (String(post.user) !== String(req.user._id)) {
       return postError(false, next, `Not authorized to delete that post`, 401);
     }
+    await Post.findByIdAndDelete(post._id);
     sendResponse(null, 'Post deleted successfully', res, 204);
   }
 });
