@@ -11,15 +11,24 @@ const signToken = function (id) {
 };
 
 const createAndSendToken = (data, statusCode, res) => {
+  // Sign Token
   const token = signToken(data._id);
+  // Remove Password from output
   data.password = undefined;
-  res.cookie('jwt', token, {
+  // Set Cookie Options
+  const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    // secure: true,
     httpOnly: true,
-  });
+  };
+  // Set Cookie to be sent over https if we're in production
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+  }
+  // Send Token as cookie
+  res.cookie('jwt', token, cookieOptions);
+  // Send Response
   res.status(statusCode).json({
     status: 'success',
     token,
