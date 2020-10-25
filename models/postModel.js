@@ -18,7 +18,6 @@ const postSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'TimeStamp Is Required'],
       default: Date.now(),
-      select: false,
     },
     likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
     images: [String],

@@ -117,3 +117,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+exports.restrictTo = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    return next(new AppError('Not authorized to access this route', 401));
+  }
+  next();
+};
