@@ -10,6 +10,25 @@ const signToken = function (id) {
   });
 };
 
+const createAndSendToken = (data, statusCode, res) => {
+  const token = signToken(data._id);
+  data.password = undefined;
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    // secure: true,
+    httpOnly: true,
+  });
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      data,
+    },
+  });
+};
+
 exports.signUp = catchAsync(async (req, res, next) => {
   const userObj = {
     name: req.body.name,
@@ -23,16 +42,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
   };
 
   const newUser = await User.create(userObj);
-  const token = signToken(newUser._id);
 
-  res.status(201).json({
-    status: 'success',
-    message: 'User created successfully',
-    data: {
-      token,
-      data: newUser,
-    },
-  });
+  createAndSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -47,12 +58,8 @@ exports.login = catchAsync(async (req, res, next) => {
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError('Username/Email or password is incorrect', 400));
     }
-    const token = signToken(user._id);
 
-    res.status(200).json({
-      status: 'success',
-      token,
-    });
+    createAndSendToken(user, 200, res);
   } else {
     return next(new AppError('Please provide email or username and password'));
   }

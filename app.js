@@ -11,11 +11,18 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
 // MiddleWare for getting the data sent in the request body
 app.use(express.json());
-// Middleware for parsing cookies
 
+// Middleware for parsing cookies
 app.use(cookieParser());
+
+// Middleware for testing data
+app.use((req, res, next) => {
+  console.log(req.cookies);
+  next();
+});
 
 // Routes
 app.use('/api/v1/posts', postRoute);
