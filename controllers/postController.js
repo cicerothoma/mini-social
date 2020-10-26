@@ -1,53 +1,29 @@
 const AppError = require('./../utils/appError');
 const Post = require('./../models/postModel');
 const catchAsync = require('./../utils/catchAsync');
-
-const postError = (
-  post,
-  next,
-  message = 'Post Not Found',
-  statusCode = 400
-) => {
-  if (!post) {
-    return next(new AppError(message, statusCode));
-  }
-};
-
-const sendResponse = (
-  data,
-  message,
-  res,
-  statusCode = 200,
-  options = { result: false }
-) => {
-  res.status(statusCode).json({
-    status: 'success',
-    message: message ? message : undefined,
-    result: options.result ? data.length : undefined,
-    data: {
-      data,
-    },
-  });
-};
+const postError = require('./../utils/falsyData');
+const sendResponse = require('./../utils/sendResponse');
 
 exports.getAllPost = catchAsync(async (req, res, next) => {
   const posts = await Post.find();
-  sendResponse(posts, null, res, 200, { result: true });
+  sendResponse(posts, res, 200, { result: true });
 });
 
 exports.getPost = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const post = await Post.findById(id);
 
-  if (!post) return postError(post, next);
+  if (!post) {
+    return postError(post, next);
+  }
 
-  sendResponse(post, null, res);
+  sendResponse(post, res);
 });
 
 exports.createPost = catchAsync(async (req, res, next) => {
   req.body.user = req.user._id;
   const newPost = await Post.create(req.body);
-  sendResponse(newPost, 'Post Created Successfully', res, 201);
+  sendResponse(newPost, res, 201, { message: 'Post Created Successfully' });
 });
 
 exports.updatePost = catchAsync(async (req, res, next) => {
@@ -58,8 +34,10 @@ exports.updatePost = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  if (!post) return postError(post, next, 'Error updating post', 401);
-  sendResponse(post, 'Post Updated Successfully', res);
+  if (!post) {
+    return postError(post, next, 'Error updating post', 401);
+  }
+  sendResponse(post, res, 200, { message: 'Post Updated Successfully' });
 });
 
 exports.deletePost = catchAsync(async (req, res, next) => {
@@ -67,8 +45,10 @@ exports.deletePost = catchAsync(async (req, res, next) => {
   let post = null;
   if (req.user.role === 'admin') {
     post = await Post.findByIdAndDelete(id);
-    if (!post) return postError(post, next, `Can't find post with id: ${id}`);
-    sendResponse(null, 'Post deleted successfully', res, 204);
+    if (!post) {
+      return postError(post, next, `Can't find post with id: ${id}`);
+    }
+    sendResponse(null, res, 204, { message: 'Post deleted successfully' });
   } else if (req.user.role === 'user') {
     post = await Post.findById(id);
     if (!post) {
@@ -78,6 +58,6 @@ exports.deletePost = catchAsync(async (req, res, next) => {
       return postError(false, next, `Not authorized to delete that post`, 401);
     }
     await Post.findByIdAndDelete(post._id);
-    sendResponse(null, 'Post deleted successfully', res, 204);
+    sendResponse(null, res, 204, { message: 'Post deleted successfully' });
   }
 });

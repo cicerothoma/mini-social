@@ -1,8 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const postRoute = require('./routes/postRouter');
-const userRoute = require('./routes/userRouter');
+const postRoute = require('./routes/postRoutes');
+const userRoute = require('./routes/userRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 

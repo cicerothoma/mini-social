@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const falsyData = require('./../utils/falsyData');
+const sendResponse = require('./../utils/sendResponse');
 
 const signToken = function (id) {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -29,12 +31,8 @@ const createAndSendToken = (data, statusCode, res) => {
   // Send Token as cookie
   res.cookie('jwt', token, cookieOptions);
   // Send Response
-  res.status(statusCode).json({
-    status: 'success',
+  sendResponse(data, res, statusCode, {
     token,
-    data: {
-      data,
-    },
   });
 };
 
@@ -65,12 +63,12 @@ exports.login = catchAsync(async (req, res, next) => {
 
     // Check if user exists and password is correct
     if (!user || !(await user.correctPassword(password, user.password))) {
-      return next(new AppError('Username/Email or password is incorrect', 400));
+      return falsyData(next, 'Username/Email or password is incorrect', 400);
     }
 
     createAndSendToken(user, 200, res);
   } else {
-    return next(new AppError('Please provide email or username and password'));
+    return falsyData(next, 'Please provide email or username and password');
   }
 });
 
@@ -88,11 +86,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   console.log(token);
 
   if (!token) {
-    return next(
-      new AppError(
-        'You are not logged in! Please log in to access this resource',
-        401
-      )
+    return falsyData(
+      next,
+      'You are not logged in! Please log in to access this resource',
+      401
     );
   }
 
@@ -102,15 +99,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
-    return next(
-      new AppError(`Can't find user with that token. Please try again`, 401)
+    return falsyData(
+      next,
+      `Can't find user with that token. Please try again`,
+      401
     );
   }
 
   // 4) Check if user changed password after token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
-    return next(
-      new AppError('User recently changed password. Please log in again', 401)
+    return falsyData(
+      next,
+      'User recently changed password. Please log in again',
+      401
     );
   }
   // Grant Access
@@ -120,7 +121,19 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 exports.restrictTo = (...roles) => (req, res, next) => {
   if (!roles.includes(req.user.role)) {
-    return next(new AppError('Not authorized to access this route', 401));
+    return falsyData(next, 'Not authorized to access this route', 401);
   }
   next();
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get User Based on the provided email
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return falsyData(next, `Can't find user with email: ${email}`, 404);
+  }
+});
+
+exports.resetPassword = (req, res, next) => {};
