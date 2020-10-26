@@ -5,6 +5,8 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
+const sendEmail = require('./../utils/email');
+const { use } = require('../routes/postRoutes');
 
 const signToken = function (id) {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -130,9 +132,37 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get User Based on the provided email
   const { email } = req.body;
   const user = await User.findOne({ email });
-
   if (!user) {
     return falsyData(next, `Can't find user with email: ${email}`, 404);
+  }
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  // The instance method above modifies the user data (passowrdResetToken && passwordResetTokenExpires fields)
+  // because of the data modification done by the instance method we need to save the document again
+  await user.save({ validateBeforeSave: false });
+  // 3) Send Email
+  const resetURL = `${req.protocole}://${req.get(
+    'host'
+  )}/api/v1/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and confirmPassword to ${resetURL}.\n If you didn't initiate this action you can simply ignore this message`;
+
+  try {
+    await sendEmail({
+      email,
+      subject: 'Forgot Password. (Link Only Valid for 10 minutes)',
+      message,
+    });
+    sendResponse(null, res, 200, { message: 'Token Sent To Mail' });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return falsyData(
+      next,
+      'There was an error sending the email. Try again later',
+      500
+    );
   }
 });
 
