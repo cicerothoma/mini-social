@@ -6,7 +6,7 @@ const AppError = require('./../utils/appError');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 const sendEmail = require('./../utils/email');
-const { use } = require('../routes/postRoutes');
+const tokenEncrypt = require('./../utils/tokenEncrypt');
 
 const signToken = function (id) {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -150,7 +150,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   try {
     await sendEmail({
       email,
-      subject: 'Forgot Password. (Link Only Valid for 10 minutes)',
+      subject: 'Forgot Password. (Valid for 10 minutes)',
       message,
     });
     sendResponse(null, res, 200, { message: 'Token Sent To Mail' });
@@ -166,4 +166,19 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.resetPassword = (req, res, next) => {};
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const { resetToken } = req.params;
+  // 1) Get User Based On resetToken
+  const hashedToken = tokenEncrypt(resetToken);
+
+  // (Get user with resetToken if the token is not yet expired)
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetTokenExpires: { $gt: Date.now() },
+  });
+  // 2) If resetToken is not yet expired and there is a user, set new password
+
+  // 3) Update changedPasswordAt property for the user
+
+  // 4) Log user in. Send JWT
+});
