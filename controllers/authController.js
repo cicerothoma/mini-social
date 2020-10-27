@@ -131,7 +131,9 @@ exports.restrictTo = (...roles) => (req, res, next) => {
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get User Based on the provided email
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    email,
+  });
   if (!user) {
     return falsyData(next, `Can't find user with email: ${email}`, 404);
   }
@@ -141,9 +143,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // because of the data modification done by the instance method we need to save the document again
   await user.save({ validateBeforeSave: false });
   // 3) Send Email
-  const resetURL = `${req.protocole}://${req.get(
+  const resetURL = `${req.protocol}://${req.get(
     'host'
-  )}/api/v1/resetPassword/${resetToken}`;
+  )}/api/v1/users/resetPassword/${resetToken}`;
 
   const message = `Forgot your password? Submit a PATCH request with your new password and confirmPassword to ${resetURL}.\n If you didn't initiate this action you can simply ignore this message`;
 
@@ -176,9 +178,21 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
     passwordResetTokenExpires: { $gt: Date.now() },
   });
+  console.log('compareToken', {
+    newHash: hashedToken,
+    dbSaved: user.passwordResetToken,
+  });
+
   // 2) If resetToken is not yet expired and there is a user, set new password
+  if (!user) {
+    return falsyData(next, 'Token is invalid or has expired', 400);
+  }
 
-  // 3) Update changedPasswordAt property for the user
-
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpires = undefined;
+  await user.save();
   // 4) Log user in. Send JWT
+  createAndSendToken(user, 200, res);
 });

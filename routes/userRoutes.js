@@ -11,12 +11,13 @@ router.route('/resetPassword/:resetToken').patch(authController.resetPassword);
 
 router.route('/').get(userController.getAllUsers);
 
-router.use(authController.protect);
-router.use(authController.restrictTo('admin'));
-
 router
   .route('/:id')
-  .delete(userController.deleteUser)
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.deleteUser
+  )
   .patch(userController.updateUser);
 
 module.exports = router;

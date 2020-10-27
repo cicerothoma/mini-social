@@ -63,9 +63,9 @@ const userSchema = new mongoose.Schema(
     },
     followers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    passwordResetTokenExpires: Date,
     passwordChangedAt: Date,
     passwordResetToken: String,
-    passwordResetTokenExpires: Date,
   },
   {
     toJSON: {
@@ -74,15 +74,23 @@ const userSchema = new mongoose.Schema(
     toObject: {
       virtuals: true,
     },
-    strict: 'throw',
+    strict: true,
   }
 );
-// Documeent Middleware
+// Document Middleware
 userSchema.pre('save', async function (next) {
   // 1) Hash Password
   this.password = await bcrypt.hash(this.password, 12);
   // 2) Remove confirmPassword field
   this.confirmPassword = undefined;
+  next();
+});
+
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) {
+    return next();
+  }
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -115,13 +123,10 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
-
   this.passwordResetToken = tokenEncrypt(resetToken);
 
-  console.log({ resetToken }, { passwordResetToken: this.passwordResetToken });
-
   // Set the password reset token to expire in 10 minutes
-  this.passwordResetTokenExpires = Date.now() * 10 * 60 * 1000;
+  this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
