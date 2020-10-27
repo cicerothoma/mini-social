@@ -5,7 +5,8 @@ const postError = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 
 exports.getAllPost = catchAsync(async (req, res, next) => {
-  const posts = await Post.find();
+  const followers = req.user.following;
+  const posts = await Post.find({ user: { $in: followers } });
   sendResponse(posts, res, 200, { result: true });
 });
 
