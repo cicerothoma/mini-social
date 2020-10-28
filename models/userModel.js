@@ -66,6 +66,8 @@ const userSchema = new mongoose.Schema(
     passwordResetTokenExpires: Date,
     passwordChangedAt: Date,
     passwordResetToken: String,
+    emailResetToken: String,
+    emailResetTokenExpires: Date,
   },
   {
     toJSON: {
@@ -83,14 +85,6 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   // 2) Remove confirmPassword field
   this.confirmPassword = undefined;
-  next();
-});
-
-userSchema.pre('save', function (next) {
-  if (!this.isModified('password') || this.isNew) {
-    return next();
-  }
-  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -128,6 +122,14 @@ userSchema.methods.createPasswordResetToken = function () {
   // Set the password reset token to expire in 10 minutes
   this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
 
+  return resetToken;
+};
+
+userSchema.methods.createEmailResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.emailResetToken = tokenEncrypt(resetToken);
+  // Set the token to expire in 10 minutes
+  this.emailResetTokenExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
 

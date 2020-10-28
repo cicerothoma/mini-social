@@ -178,10 +178,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
     passwordResetTokenExpires: { $gt: Date.now() },
   });
-  console.log('compareToken', {
-    newHash: hashedToken,
-    dbSaved: user.passwordResetToken,
-  });
 
   // 2) If resetToken is not yet expired and there is a user, set new password
   if (!user) {
@@ -205,7 +201,62 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   }
   user.password = newPassword;
   user.confirmPassword = newConfirmPassword;
+  user.passwordChangedAt = Date.now() - 1000;
   await user.save();
 
   createAndSendToken(user, 200, res);
+});
+
+exports.sendResetEmailToken = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  console.log(user);
+  const resetToken = user.createEmailResetToken();
+  await user.save({ validateBeforeSave: false });
+  const resetEmailUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetEmail/${resetToken}`;
+  const message = `Your Email Reset Token has been sent to your current email. \n Submit a patch request with new email to ${resetEmailUrl}`;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Reset Email (Only Valid For 10 Minutes)',
+      message,
+    });
+    sendResponse(user, res, 200, { message: 'Token sent to mail' });
+  } catch (err) {
+    user.emailResetToken = undefined;
+    user.emailResetTokenExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return falsyData(
+      next,
+      'There was an error sending the mail. Please try again.',
+      401
+    );
+  }
+});
+
+exports.resetEmail = catchAsync(async (req, res, next) => {
+  const { resetToken } = req.params;
+  const encryptedToken = tokenEncrypt(resetToken);
+  const user = await User.findOne({
+    emailResetToken: encryptedToken,
+    emailResetTokenExpires: { $gt: Date.now() },
+  });
+  console.log(user);
+  if (!user) {
+    return falsyData(next, 'Token is invalid', 401);
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      email: req.body.newEmail,
+    },
+    {
+      new: true,
+    }
+  );
+  sendResponse(updatedUser, res, 200, {
+    message: 'Email Updated Successfully',
+  });
 });
