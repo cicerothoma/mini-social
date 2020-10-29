@@ -57,12 +57,17 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password, username } = req.body;
+  console.log(password);
 
   if ((email || username) && password) {
     const user = await User.findOne({ $or: [{ email }, { username }] }).select(
       '+password'
     );
-
+    const isPasswordCorrect = await user.correctPassword(
+      password,
+      user.password
+    );
+    console.log(isPasswordCorrect);
     // Check if user exists and password is correct
     if (!user || !(await user.correctPassword(password, user.password))) {
       return falsyData(next, 'Username/Email or password is incorrect', 400);
@@ -201,7 +206,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   }
   user.password = newPassword;
   user.confirmPassword = newConfirmPassword;
-  user.passwordChangedAt = Date.now() - 1000;
   await user.save();
 
   createAndSendToken(user, 200, res);
@@ -238,7 +242,7 @@ exports.sendResetEmailToken = catchAsync(async (req, res, next) => {
 exports.resetEmail = catchAsync(async (req, res, next) => {
   const { resetToken } = req.params;
   const encryptedToken = tokenEncrypt(resetToken);
-  const user = await User.findOne({
+  let user = await User.findOne({
     emailResetToken: encryptedToken,
     emailResetTokenExpires: { $gt: Date.now() },
   });
@@ -246,17 +250,11 @@ exports.resetEmail = catchAsync(async (req, res, next) => {
   if (!user) {
     return falsyData(next, 'Token is invalid', 401);
   }
-
-  const updatedUser = await User.findByIdAndUpdate(
-    user._id,
-    {
-      email: req.body.newEmail,
-    },
-    {
-      new: true,
-    }
-  );
-  sendResponse(updatedUser, res, 200, {
+  user.email = req.body.newEmail;
+  user.emailResetToken = undefined;
+  user.emailResetTokenExpires = undefined;
+  user = await user.save({ validateBeforeSave: false });
+  sendResponse(user, res, 200, {
     message: 'Email Updated Successfully',
   });
 });

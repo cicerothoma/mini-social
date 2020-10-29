@@ -29,7 +29,7 @@ app.use('/api/v1/posts', postRoute);
 app.use('/api/v1/users', userRoute);
 
 // Unhandled Routes
-app.use('*', (req, res, next) => {
+app.all('*', (req, res, next) => {
   const error = `Can't find ${req.originalUrl} on this server`;
 
   next(new AppError(error, 400));
