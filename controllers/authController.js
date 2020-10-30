@@ -84,7 +84,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  console.log(token);
 
   if (!token) {
     return falsyData(
@@ -207,7 +206,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
 exports.sendResetEmailToken = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id);
-  console.log(user);
   const resetToken = user.createEmailResetToken();
   await user.save({ validateBeforeSave: false });
   const resetEmailUrl = `${req.protocol}://${req.get(
@@ -240,7 +238,6 @@ exports.resetEmail = catchAsync(async (req, res, next) => {
     emailResetToken: encryptedToken,
     emailResetTokenExpires: { $gt: Date.now() },
   });
-  console.log(user);
   if (!user) {
     return falsyData(next, 'Token is invalid', 401);
   }
