@@ -5,10 +5,13 @@ const authController = require('../controllers/authController');
 const router = express.Router();
 
 router.use(authController.protect);
+router
+  .route('/all')
+  .get(authController.restrictTo('admin', 'user'), postController.getAllPosts);
 
 router
   .route('/')
-  .get(postController.getAllPost)
+  .get(postController.getUserCuratedPost)
   .post(postController.createPost);
 
 router

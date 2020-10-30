@@ -1,12 +1,50 @@
-const AppError = require('./../utils/appError');
 const Post = require('./../models/postModel');
 const catchAsync = require('./../utils/catchAsync');
 const postError = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 
-exports.getAllPost = catchAsync(async (req, res, next) => {
+exports.getAllPosts = catchAsync(async (req, res, next) => {
+  // Build Query
+  // 1a) Filtering
+  const queryObj = { ...req.query };
+  const excludedFields = ['page', 'sort', 'fields', 'limit'];
+  excludedFields.forEach((el) => delete queryObj[el]);
+
+  // 1b) Advanced Filtering
+  let queryString = JSON.stringify(queryObj);
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte|eq)\b/g,
+    (matchedWord) => `$${matchedWord}`
+  );
+  let query = Post.find(JSON.parse(queryString));
+
+  // 2) Sorting
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(',').join(' ');
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort({ createdAt: 'desc' });
+  }
+
+  // 3) Field Limiting
+  if (req.query.fields) {
+    const fields = req.query.fields.split(',').join(' ');
+    query = query.select(fields);
+  } else {
+    query = query.select('-__v');
+  }
+  // Execute Query
+  const posts = await query;
+  sendResponse(posts, res, 200, { result: true });
+});
+
+exports.getUserCuratedPost = catchAsync(async (req, res, next) => {
   const followers = req.user.following;
-  const posts = await Post.find({ user: { $in: followers } });
+  const loggedInUserID = req.user._id;
+  // const posts = await Post.find({ user: { $in: followers } });
+  const posts = await Post.find({
+    $or: [{ user: { $in: followers } }, { user: loggedInUserID }],
+  }).find(req.query);
   sendResponse(posts, res, 200, { result: true });
 });
 
