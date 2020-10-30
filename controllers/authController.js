@@ -57,17 +57,11 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password, username } = req.body;
-  console.log(password);
 
   if ((email || username) && password) {
     const user = await User.findOne({ $or: [{ email }, { username }] }).select(
       '+password'
     );
-    const isPasswordCorrect = await user.correctPassword(
-      password,
-      user.password
-    );
-    console.log(isPasswordCorrect);
     // Check if user exists and password is correct
     if (!user || !(await user.correctPassword(password, user.password))) {
       return falsyData(next, 'Username/Email or password is incorrect', 400);
