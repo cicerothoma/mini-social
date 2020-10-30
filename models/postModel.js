@@ -38,10 +38,9 @@ const postSchema = new mongoose.Schema(
 
 // Query Middleware
 
-postSchema.pre(/^find/, function (next) {
-  this.select('-__v');
-  next();
-});
+// postSchema.pre(/^find/, function (next) {
+//   next();
+// });
 
 const Post = mongoose.model('Post', postSchema, 'post');
 
