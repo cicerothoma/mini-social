@@ -13,7 +13,7 @@ router.route('/like-post/:postID').patch(postController.likePost);
 
 router
   .route('/most-liked-post')
-  .get(postController.addMostLikedQuery, postController.getAllPosts);
+  .get(postController.aliasMostLikedPost, postController.getAllPosts);
 
 router
   .route('/')
