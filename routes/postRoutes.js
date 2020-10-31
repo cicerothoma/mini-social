@@ -9,6 +9,12 @@ router
   .route('/all')
   .get(authController.restrictTo('admin', 'user'), postController.getAllPosts);
 
+router.route('/like-post/:postID').patch(postController.likePost);
+
+router
+  .route('/most-liked-post')
+  .get(postController.addMostLikedQuery, postController.getAllPosts);
+
 router
   .route('/')
   .get(postController.getUserCuratedPost)
