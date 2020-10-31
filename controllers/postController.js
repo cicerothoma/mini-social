@@ -1,7 +1,13 @@
 const Post = require('./../models/postModel');
 const catchAsync = require('./../utils/catchAsync');
+const falsyData = require('./../utils/falsyData');
 const postError = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
+
+exports.addMostLikedQuery = (req, res, next) => {
+  req.query = { sort: '-likes', limit: '1' };
+  next();
+};
 
 exports.getAllPosts = catchAsync(async (req, res, next) => {
   // Build Query
@@ -33,6 +39,14 @@ exports.getAllPosts = catchAsync(async (req, res, next) => {
   } else {
     query = query.select('-__v');
   }
+
+  // 4) Pagination
+
+  const limit = +req.query.limit || 100;
+  const page = +req.query.page || 1;
+  const skip = limit * (page - 1);
+  query = query.skip(skip).limit(limit);
+
   // Execute Query
   const posts = await query;
   sendResponse(posts, res, 200, { result: true });
@@ -67,16 +81,20 @@ exports.createPost = catchAsync(async (req, res, next) => {
 
 exports.updatePost = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  req.body.updatedAt = Date.now();
-  const post = await Post.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
+  const post = await Post.findById(id);
   if (!post) {
     return postError(post, next, 'Error updating post', 401);
   }
-  sendResponse(post, res, 200, { message: 'Post Updated Successfully' });
+  if (String(post.user) !== String(req.user._id)) {
+    return postError(false, next, `Not authorized to update that post`, 401);
+  }
+  req.body.updatedAt = Date.now();
+  const updatedPost = await Post.findByIdAndUpdate(id, req.body, {
+    runValidators: true,
+    new: true,
+  });
+
+  sendResponse(null, res, 200, { message: 'Post Updated Successfully' });
 });
 
 exports.deletePost = catchAsync(async (req, res, next) => {
@@ -98,5 +116,23 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     }
     await Post.findByIdAndDelete(post._id);
     sendResponse(null, res, 204, { message: 'Post deleted successfully' });
+  }
+});
+
+exports.likePost = catchAsync(async (req, res, next) => {
+  const post = await Post.findById(req.params.postID);
+  if (!post) {
+    return falsyData(next, `Can't find post with id: ${id}`, 401);
+  }
+  if (!post.likes.includes(req.user._id)) {
+    await post.update({ likes: post.likes.concat([req.user._id]) });
+    sendResponse(null, res, 200, { message: 'Post Liked' });
+  } else {
+    const userIdIndex = post.likes.findIndex(
+      (el) => String(el) === String(req.user._id)
+    );
+    post.likes.splice(userIdIndex, 1);
+    await post.update({ likes: post.likes });
+    sendResponse(null, res, 200, { message: 'Post Unliked' });
   }
 });
