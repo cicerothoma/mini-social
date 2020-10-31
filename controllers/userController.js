@@ -43,3 +43,44 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
     message: 'User successfully deleted',
   });
 });
+
+exports.follow = catchAsync(async (req, res, next) => {
+  const loggedInUserID = req.user._id;
+  const userToFollowID = req.params.toFollowID;
+  const loggedInUser = await User.findById(req.user._id);
+  const userToFollow = await User.findById(req.params.toFollowID);
+  if (!userToFollow) {
+    return falsyData(next, `Can't find user with id: ${id}`, 401);
+  }
+  if (!loggedInUser.following.includes(userToFollowID)) {
+    await loggedInUser.update({
+      following: loggedInUser.following.concat([userToFollowID]),
+    });
+    await userToFollow.update({
+      followers: userToFollow.followers.concat([loggedInUserID]),
+    });
+    sendResponse({ followed: true }, res, 200, {
+      message: `${userToFollow.username} followed`,
+    });
+  } else {
+    loggedInUser.following.splice(
+      loggedInUser.following.findIndex(
+        (el) => String(el) === String(userToFollowID)
+      ),
+      1
+    );
+    userToFollow.followers.splice(
+      userToFollow.followers.findIndex(
+        (el) => String(el) === String(loggedInUserID)
+      ),
+      1
+    );
+    await loggedInUser.update({
+      following: loggedInUser.following,
+    });
+    await userToFollow.update({ followers: userToFollow.followers });
+    sendResponse({ unfollowed: true }, res, 200, {
+      message: `${userToFollow.username} unfollowed`,
+    });
+  }
+});
