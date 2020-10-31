@@ -12,6 +12,9 @@ router
   .route('/sendResetEmailToken')
   .post(authController.protect, authController.sendResetEmailToken);
 router.route('/resetEmail/:resetToken').patch(authController.resetEmail);
+router
+  .route('/follow/:toFollowID')
+  .patch(authController.protect, userController.follow);
 
 router.route('/').get(userController.getAllUsers);
 router
