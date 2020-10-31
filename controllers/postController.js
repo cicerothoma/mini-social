@@ -1,6 +1,6 @@
 const Post = require('./../models/postModel');
+const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
-const falsyData = require('./../utils/falsyData');
 const postError = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 
@@ -14,55 +14,27 @@ exports.aliasMostLikedPost = (req, res, next) => {
 };
 
 exports.getAllPosts = catchAsync(async (req, res, next) => {
-  // Build Query
-  // 1a) Filtering
-  const queryObj = { ...req.query };
-  const excludedFields = ['page', 'sort', 'fields', 'limit'];
-  excludedFields.forEach((el) => delete queryObj[el]);
-
-  // 1b) Advanced Filtering
-  let queryString = JSON.stringify(queryObj);
-  queryString = queryString.replace(
-    /\b(gte|gt|lt|lte|eq)\b/g,
-    (matchedWord) => `$${matchedWord}`
-  );
-  let query = Post.find(JSON.parse(queryString));
-
-  // 2) Sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort({ createdAt: 'desc' });
-  }
-
-  // 3) Field Limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(',').join(' ');
-    query = query.select(fields);
-  } else {
-    query = query.select('-__v');
-  }
-
-  // 4) Pagination
-
-  const limit = +req.query.limit || 100;
-  const page = +req.query.page || 1;
-  const skip = limit * (page - 1);
-  query = query.skip(skip).limit(limit);
-
-  // Execute Query
-  const posts = await query;
+  const query = new APIFeatures(req.query)
+    .filter()
+    .limitFields()
+    .sort()
+    .paginate();
+  const posts = await query.mongooseQuery;
   sendResponse(posts, res, 200, { result: true });
 });
 
 exports.getUserCuratedPost = catchAsync(async (req, res, next) => {
   const followers = req.user.following;
   const loggedInUserID = req.user._id;
-  // const posts = await Post.find({ user: { $in: followers } });
-  const posts = await Post.find({
+  const userCuratedPosts = Post.find({
     $or: [{ user: { $in: followers } }, { user: loggedInUserID }],
-  }).find(req.query);
+  });
+  const queries = new APIFeatures(req.query, userCuratedPosts)
+    .filter()
+    .limitFields()
+    .sort()
+    .paginate();
+  const posts = await queries.mongooseQuery;
   sendResponse(posts, res, 200, { result: true });
 });
 
@@ -126,17 +98,17 @@ exports.deletePost = catchAsync(async (req, res, next) => {
 exports.likePost = catchAsync(async (req, res, next) => {
   const post = await Post.findById(req.params.postID);
   if (!post) {
-    return falsyData(next, `Can't find post with id: ${id}`, 401);
+    return postError(next, `Can't find post with id: ${id}`, 401);
   }
   if (!post.likes.includes(req.user._id)) {
     await post.update({ likes: post.likes.concat([req.user._id]) });
-    sendResponse(null, res, 200, { message: 'Post Liked' });
+    sendResponse({ postLiked: true }, res, 200, { message: 'Post Liked' });
   } else {
     const userIdIndex = post.likes.findIndex(
       (el) => String(el) === String(req.user._id)
     );
     post.likes.splice(userIdIndex, 1);
     await post.update({ likes: post.likes });
-    sendResponse(null, res, 200, { message: 'Post Unliked' });
+    sendResponse({ postLiked: false }, res, 200, { message: 'Post Unliked' });
   }
 });
