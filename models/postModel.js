@@ -32,7 +32,7 @@ const postSchema = new mongoose.Schema(
     toObject: {
       virtuals: true,
     },
-    strict: 'throw',
+    strict: true,
   }
 );
 
