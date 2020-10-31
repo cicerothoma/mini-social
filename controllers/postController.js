@@ -4,7 +4,7 @@ const falsyData = require('./../utils/falsyData');
 const postError = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 
-exports.addMostLikedQuery = (req, res, next) => {
+exports.aliasMostLikedPost = (req, res, next) => {
   req.query = { sort: '-likes', limit: '1' };
   next();
 };
