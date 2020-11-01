@@ -105,10 +105,7 @@ exports.likePost = catchAsync(async (req, res, next) => {
     await post.update({ likes: post.likes });
     sendResponse({ postLiked: true }, res, 200, { message: 'Post Liked' });
   } else {
-    const userIdIndex = post.likes.findIndex(
-      (el) => String(el) === String(req.user._id)
-    );
-    post.likes.splice(userIdIndex, 1);
+    post.likes.splice(post.likes.indexOf(req.user._id), 1);
     await post.update({ likes: post.likes });
     sendResponse({ postLiked: false }, res, 200, { message: 'Post Unliked' });
   }
