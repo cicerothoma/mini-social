@@ -101,7 +101,8 @@ exports.likePost = catchAsync(async (req, res, next) => {
     return postError(next, `Can't find post with id: ${id}`, 401);
   }
   if (!post.likes.includes(req.user._id)) {
-    await post.update({ likes: post.likes.concat([req.user._id]) });
+    post.likes.push(req.user._id);
+    await post.update({ likes: post.likes });
     sendResponse({ postLiked: true }, res, 200, { message: 'Post Liked' });
   } else {
     const userIdIndex = post.likes.findIndex(
