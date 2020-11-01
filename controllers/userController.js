@@ -65,15 +65,11 @@ exports.follow = catchAsync(async (req, res, next) => {
     });
   } else {
     loggedInUser.following.splice(
-      loggedInUser.following.findIndex(
-        (el) => String(el) === String(userToFollowID)
-      ),
+      loggedInUser.following.indexOf(userToFollowID),
       1
     );
     userToFollow.followers.splice(
-      userToFollow.followers.findIndex(
-        (el) => String(el) === String(loggedInUserID)
-      ),
+      userToFollow.followers.indexOf(loggedInUserID),
       1
     );
     await loggedInUser.update({
