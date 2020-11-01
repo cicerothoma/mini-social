@@ -52,11 +52,13 @@ exports.follow = catchAsync(async (req, res, next) => {
     return falsyData(next, `Can't find user with id: ${id}`, 401);
   }
   if (!loggedInUser.following.includes(userToFollowID)) {
+    loggedInUser.following.push(userToFollowID);
     await loggedInUser.update({
-      following: loggedInUser.following.concat([userToFollowID]),
+      following: loggedInUser.following,
     });
+    userToFollow.followers.push(loggedInUserID);
     await userToFollow.update({
-      followers: userToFollow.followers.concat([loggedInUserID]),
+      followers: userToFollow.followers,
     });
     sendResponse({ followed: true }, res, 200, {
       message: `${userToFollow.username} followed`,
