@@ -2,6 +2,7 @@ const Post = require('./../models/postModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 const postError = require('./../utils/falsyData');
+const likePost = require('./../utils/like');
 const sendResponse = require('./../utils/sendResponse');
 
 exports.aliasMostLikedPost = (req, res, next) => {
@@ -100,13 +101,5 @@ exports.likePost = catchAsync(async (req, res, next) => {
   if (!post) {
     return postError(next, `Can't find post with id: ${id}`, 401);
   }
-  if (!post.likes.includes(req.user._id)) {
-    post.likes.push(req.user._id);
-    await post.update({ likes: post.likes });
-    sendResponse({ postLiked: true }, res, 200, { message: 'Post Liked' });
-  } else {
-    post.likes.splice(post.likes.indexOf(req.user._id), 1);
-    await post.update({ likes: post.likes });
-    sendResponse({ postLiked: false }, res, 200, { message: 'Post Unliked' });
-  }
+  await likePost(post, req, res);
 });
