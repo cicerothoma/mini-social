@@ -24,7 +24,6 @@ const commentSchema = new mongoose.Schema(
     },
     replyComment: [{ type: mongoose.Schema.ObjectId, ref: 'Reply' }],
     likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
-    updatedAt: Date,
   },
   {
     toJSON: { virtuals: true },
