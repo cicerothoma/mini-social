@@ -6,6 +6,8 @@ const router = express.Router({ mergeParams: true });
 
 router.use(authController.protect);
 
+router.route('/likeComment/:commentID').patch(commentController.likeComment);
+
 router
   .route('/')
   .get(commentController.getAllComments)
