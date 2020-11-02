@@ -11,10 +11,12 @@ const replyCommentSchema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: 'User',
     },
-    likes: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-    },
+    likes: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
     createdAt: {
       type: Date,
       required: [true, 'Comment reply must have timestamp'],
