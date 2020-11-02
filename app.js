@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const postRoute = require('./routes/postRoutes');
 const userRoute = require('./routes/userRoutes');
+const commentRoute = require('./routes/commentRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -27,6 +28,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/v1/posts', postRoute);
 app.use('/api/v1/users', userRoute);
+app.use('/api/v1/comments', commentRoute);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {

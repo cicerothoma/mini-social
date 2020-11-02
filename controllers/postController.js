@@ -14,7 +14,7 @@ exports.aliasMostLikedPost = (req, res, next) => {
 };
 
 exports.getAllPosts = catchAsync(async (req, res, next) => {
-  const query = new APIFeatures(req.query)
+  const query = new APIFeatures(req.query, Post.find().populate('comments'))
     .filter()
     .limitFields()
     .sort()
@@ -28,7 +28,7 @@ exports.getUserCuratedPost = catchAsync(async (req, res, next) => {
   const loggedInUserID = req.user._id;
   const userCuratedPosts = Post.find({
     $or: [{ user: { $in: followers } }, { user: loggedInUserID }],
-  });
+  }).populate('comments');
   const queries = new APIFeatures(req.query, userCuratedPosts)
     .filter()
     .limitFields()
@@ -70,7 +70,7 @@ exports.updatePost = catchAsync(async (req, res, next) => {
     new: true,
   });
 
-  sendResponse(null, res, 200, { message: 'Post Updated Successfully' });
+  sendResponse(updatedPost, res, 200, { message: 'Post Updated Successfully' });
 });
 
 exports.deletePost = catchAsync(async (req, res, next) => {

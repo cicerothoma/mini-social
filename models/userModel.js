@@ -98,11 +98,6 @@ userSchema.pre('save', function (next) {
 
 // Query Middleware
 
-userSchema.pre(/^find/, function (next) {
-  this.select('-__v');
-  next();
-});
-
 // Instance Methods
 userSchema.methods.correctPassword = async (plainPassword, hashedPassword) => {
   return await bcrypt.compare(plainPassword, hashedPassword);

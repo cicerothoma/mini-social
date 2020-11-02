@@ -23,7 +23,6 @@ const postSchema = new mongoose.Schema(
     updatedAt: Date,
     likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
     images: [String],
-    comment: [{ type: mongoose.Schema.ObjectId, ref: 'Comment' }],
   },
   {
     toJSON: {
@@ -36,9 +35,18 @@ const postSchema = new mongoose.Schema(
   }
 );
 
+// Virtual Populate
+
+postSchema.virtual('comments', {
+  ref: 'Comment',
+  foreignField: 'post',
+  localField: '_id',
+});
+
 // Query Middleware
 
 // postSchema.pre(/^find/, function (next) {
+//   this.populate('')
 //   next();
 // });
 
