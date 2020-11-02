@@ -1,8 +1,11 @@
 const express = require('express');
 const postController = require('../controllers/postController');
 const authController = require('../controllers/authController');
+const commentRoute = require('../routes/commentRoutes');
 
 const router = express.Router();
+
+router.use('/:postID/comments', commentRoute);
 
 router.use(authController.protect);
 router
