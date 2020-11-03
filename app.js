@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const postRoute = require('./routes/postRoutes');
 const userRoute = require('./routes/userRoutes');
 const commentRoute = require('./routes/commentRoutes');
+const replyCommentRoute = require('./routes/replyCommentRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/posts', postRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/comments', commentRoute);
+app.use('/api/v1/replyComments', replyCommentRoute);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {
