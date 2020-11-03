@@ -12,7 +12,7 @@ router
   .route('/all')
   .get(authController.restrictTo('admin', 'user'), postController.getAllPosts);
 
-router.route('/like-post/:postID').patch(postController.likePost);
+router.route('/like/:postID').patch(postController.likePost);
 
 router
   .route('/most-liked-post')
