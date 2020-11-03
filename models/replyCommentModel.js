@@ -29,6 +29,14 @@ const replyCommentSchema = new mongoose.Schema(
   }
 );
 
+replyCommentSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'user',
+    select: 'name username email profileImage',
+  });
+  next();
+});
+
 const ReplyComment = mongoose.model(
   'ReplyComment',
   replyCommentSchema,
