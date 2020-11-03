@@ -22,7 +22,7 @@ const commentSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Comment must belong to a user'],
     },
-    replyComment: [{ type: mongoose.Schema.ObjectId, ref: 'Reply' }],
+    replyComment: [{ type: mongoose.Schema.ObjectId, ref: 'ReplyComment' }],
     likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
   {
@@ -37,6 +37,9 @@ commentSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',
     select: 'name username email profileImage',
+  }).populate({
+    path: 'replyComment',
+    select: 'message user likes createdAt',
   });
   next();
 });
