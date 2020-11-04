@@ -5,6 +5,7 @@ const postRoute = require('./routes/postRoutes');
 const userRoute = require('./routes/userRoutes');
 const commentRoute = require('./routes/commentRoutes');
 const replyCommentRoute = require('./routes/replyCommentRoutes');
+const notificationRoute = require('./routes/notificationRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -31,6 +32,7 @@ app.use('/api/v1/posts', postRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/comments', commentRoute);
 app.use('/api/v1/replyComments', replyCommentRoute);
+app.use('/api/v1/notifications', notificationRoute);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {
