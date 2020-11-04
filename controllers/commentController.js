@@ -2,6 +2,7 @@ const Comment = require('./../models/commentModel');
 const catchAsync = require('./../utils/catchAsync');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
+const APIFeatures = require('./../utils/apiFeatures');
 const likeComment = require('./../utils/like');
 
 exports.getAllComments = catchAsync(async (req, res, next) => {
@@ -9,7 +10,11 @@ exports.getAllComments = catchAsync(async (req, res, next) => {
   if (req.params.postID) {
     filter = { post: req.params.postID };
   }
-  const comments = await Comment.find(filter);
+  const query = new APIFeatures(req.query, Comment.find(filter))
+    .filter()
+    .sort()
+    .limitFields();
+  const comments = await new query.mongooseQuery();
   sendResponse(comments, res, 200, { result: true });
 });
 
