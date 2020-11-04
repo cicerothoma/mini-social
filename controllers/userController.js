@@ -2,6 +2,7 @@ const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
+const notify = require('./../utils/notify');
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -60,6 +61,11 @@ exports.follow = catchAsync(async (req, res, next) => {
     await userToFollow.update({
       followers: userToFollow.followers,
     });
+    await notify(
+      loggedInUserID,
+      userToFollowID,
+      `${loggedInUser.name} followed you`
+    );
     sendResponse({ followed: true }, res, 200, {
       message: `${userToFollow.username} followed`,
     });
@@ -76,6 +82,11 @@ exports.follow = catchAsync(async (req, res, next) => {
       following: loggedInUser.following,
     });
     await userToFollow.update({ followers: userToFollow.followers });
+    await notify(
+      loggedInUserID,
+      userToFollowID,
+      `${loggedInUser.name} unfollowed you`
+    );
     sendResponse({ unfollowed: true }, res, 200, {
       message: `${userToFollow.username} unfollowed`,
     });
