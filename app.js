@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 // Middleware for testing data
 app.use((req, res, next) => {
-  console.log(req.cookies);
+  console.log(req.originalUrl, req.method);
   next();
 });
 
