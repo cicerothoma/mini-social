@@ -3,6 +3,7 @@ const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 const postError = require('./../utils/falsyData');
 const likePost = require('./../utils/like');
+const notify = require('./../utils/notify');
 const sendResponse = require('./../utils/sendResponse');
 
 exports.aliasMostLikedPost = (req, res, next) => {
@@ -101,5 +102,15 @@ exports.likePost = catchAsync(async (req, res, next) => {
   if (!post) {
     return postError(next, `Can't find post with id: ${id}`, 401);
   }
-  await likePost(post, req, res);
+  likePost(post, req, res).then(async (data) => {
+    if (data.docLiked) {
+      if (String(req.user._id) !== String(post.user)) {
+        await notify(
+          req.user._id,
+          post.user,
+          `${req.user.name} liked your post`
+        );
+      }
+    }
+  });
 });
