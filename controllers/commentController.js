@@ -4,6 +4,7 @@ const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 const APIFeatures = require('./../utils/apiFeatures');
 const likeComment = require('./../utils/like');
+const notify = require('./../utils/notify');
 
 exports.getAllComments = catchAsync(async (req, res, next) => {
   let filter = {};
@@ -14,7 +15,7 @@ exports.getAllComments = catchAsync(async (req, res, next) => {
     .filter()
     .sort()
     .limitFields();
-  const comments = await new query.mongooseQuery();
+  const comments = await query.mongooseQuery;
   sendResponse(comments, res, 200, { result: true });
 });
 
@@ -26,6 +27,7 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
     req.body.post = req.params.postID;
   }
   const newComment = await Comment.create(req.body);
+  // await notify(req.body.user, )
   sendResponse(newComment, res, 201, { message: 'Comment Successful' });
 });
 
