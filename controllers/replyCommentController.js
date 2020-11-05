@@ -4,6 +4,7 @@ const catchAsync = require('./../utils/catchAsync');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 const likeReplies = require('./../utils/like');
+const notify = require('./../utils/notify');
 
 exports.getAllReplies = catchAsync(async (req, res, next) => {
   const replies = await ReplyComment.find();
@@ -15,16 +16,40 @@ exports.createReply = catchAsync(async (req, res, next) => {
   const { commentID } = req.params;
   const comment = await Comment.findById(commentID);
   if (!comment) {
-    return falsyData(next, `Can't find comment with id: ${id}`, 401);
+    return falsyData(next, `Can't find comment with id: ${commentID}`, 401);
   }
   const reply = await ReplyComment.create(req.body);
   comment.replyComment.push(reply._id);
   await comment.update({ replyComment: comment.replyComment });
+  if (String(req.user._id) !== String(comment.user._id)) {
+    await notify(
+      req.user._id,
+      comment.user,
+      `${req.user.name} replied to your comment`
+    );
+  }
   sendResponse(reply, res, 201, { message: 'Reply Successful' });
 });
 
 exports.likeReply = catchAsync(async (req, res, next) => {
-  const { replyID } = req.params;
+  const { replyID, commentID } = req.params;
   const replyDoc = await ReplyComment.findById(replyID);
-  await likeReplies(replyDoc, req, res);
+  if (!replyDoc) {
+    return falsyData(next, `Can't find comment with id: ${replyID}`, 403);
+  }
+  const commentDoc = await Comment.findById(commentID);
+  if (!commentDoc) {
+    return falsyData(next, `Can't find comment with id: ${commentID}`, 403);
+  }
+  likeReplies(replyDoc, req, res).then(async (data) => {
+    if (data.docLiked) {
+      if (String(req.user._id) !== String(commentDoc.user._id)) {
+        await notify(
+          req.user._id,
+          commentDoc.user,
+          `${req.user.name} liked your reply`
+        );
+      }
+    }
+  });
 });
