@@ -1,4 +1,5 @@
 const Comment = require('./../models/commentModel');
+const Post = require('./../models/postModel');
 const catchAsync = require('./../utils/catchAsync');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
@@ -26,15 +27,50 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
   if (!req.body.post) {
     req.body.post = req.params.postID;
   }
+
+  const post = await Post.findById(req.body.post);
+  if (!post) {
+    return falsyData(next, `Can't comment on a post that doesn't exists`, 403);
+  }
   const newComment = await Comment.create(req.body);
-  // await notify(req.body.user, )
+  // Checks if the owner of the post is the same person commenting on the post
+  if (String(post.user) !== String(req.body.user)) {
+    await notify(
+      req.body.user,
+      post.user,
+      `${req.user.name} commented on your post`
+    );
+  }
   sendResponse(newComment, res, 201, { message: 'Comment Successful' });
 });
 
 exports.likeComment = catchAsync(async (req, res, next) => {
+  console.log(req.params);
+  const postDoc = await Post.findById(req.params.postID);
+  if (!postDoc) {
+    return falsyData(
+      next,
+      `Can't find post with id: ${req.params.postID}`,
+      403
+    );
+  }
   const commentDoc = await Comment.findById(req.params.commentID);
   if (!commentDoc) {
-    return falsyData(next, `Can't find comment with id: ${id}`, 401);
+    return falsyData(
+      next,
+      `Can't find comment with id: ${req.params.commentID}`,
+      401
+    );
   }
-  await likeComment(commentDoc, req, res);
+  likeComment(commentDoc, req, res).then(async (data) => {
+    if (data.docLiked) {
+      if (String(req.user._id) !== String(postDoc.user)) {
+        await notify(
+          req.user._id,
+          postDoc.user,
+          `${req.user.name} liked your comment`
+        );
+      }
+    }
+  });
 });
