@@ -7,6 +7,9 @@ const notificationSchema = new mongoose.Schema({
   }, // Notification creator
   receiver: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Ids of the receivers of the notification
   message: String, // any description of the notification message
+  document: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
   readBy: [
     {
       readerID: {

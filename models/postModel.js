@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Post Must Belong To A User'],
     },
@@ -21,7 +21,7 @@ const postSchema = new mongoose.Schema(
       immutable: true,
     },
     updatedAt: Date,
-    likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     images: [String],
   },
   {

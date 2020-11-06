@@ -8,12 +8,12 @@ const replyCommentSchema = new mongoose.Schema(
       trim: [true],
     },
     user: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
     likes: [
       {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
       },
     ],

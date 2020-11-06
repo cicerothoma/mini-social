@@ -22,8 +22,10 @@ const commentSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'Comment must belong to a user'],
     },
-    replyComment: [{ type: mongoose.Schema.ObjectId, ref: 'ReplyComment' }],
-    likes: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    replyComment: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'ReplyComment' },
+    ],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   {
     toJSON: { virtuals: true },
