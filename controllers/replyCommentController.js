@@ -11,6 +11,14 @@ exports.getAllReplies = catchAsync(async (req, res, next) => {
   sendResponse(replies, res, 200, { result: true });
 });
 
+exports.getReply = catchAsync(async (req, res, next) => {
+  const reply = await ReplyComment.findById(req.params.id);
+  if (!reply) {
+    return falsyData(next, `Can't find reply with id: ${req.params.id}`, 404);
+  }
+  sendResponse(reply, res, 200);
+});
+
 exports.createReply = catchAsync(async (req, res, next) => {
   req.body.user = req.user._id;
   const { commentID } = req.params;
@@ -25,7 +33,14 @@ exports.createReply = catchAsync(async (req, res, next) => {
     await notify(
       req.user._id,
       comment.user,
-      `${req.user.name} replied to your comment`
+      `${req.user.name} replied to your comment`,
+      {
+        type: 'reply',
+        affectedDoc: commentID,
+        endPoint: `${req.protocol}://${req.get('host')}/api/v1/replyComments/${
+          reply._id
+        }`,
+      }
     );
   }
   sendResponse(reply, res, 201, { message: 'Reply Successful' });
@@ -47,7 +62,14 @@ exports.likeReply = catchAsync(async (req, res, next) => {
         await notify(
           req.user._id,
           commentDoc.user,
-          `${req.user.name} liked your reply`
+          `${req.user.name} liked your reply`,
+          {
+            type: 'reply',
+            affectedDoc: replyID,
+            endPoint: `${req.protocol}://${req.get(
+              'host'
+            )}/api/v1/replyComments/${replyID}`,
+          }
         );
       }
     }
