@@ -19,4 +19,6 @@ router
     commentController.addNewComment
   );
 
+router.route('/:id').get(commentController.getComment);
+
 module.exports = router;
