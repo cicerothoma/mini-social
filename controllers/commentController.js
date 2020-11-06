@@ -20,6 +20,14 @@ exports.getAllComments = catchAsync(async (req, res, next) => {
   sendResponse(comments, res, 200, { result: true });
 });
 
+exports.getComment = catchAsync(async (req, res, next) => {
+  const comment = await Comment.findById(req.params.id);
+  if (!comment) {
+    return falsyData(next, `Can't find comment with id: ${req.params.id}`, 404);
+  }
+  sendResponse(comment, res, 200);
+});
+
 exports.addNewComment = catchAsync(async (req, res, next) => {
   if (!req.body.user) {
     req.body.user = req.user._id;
@@ -38,7 +46,14 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
     await notify(
       req.body.user,
       post.user,
-      `${req.user.name} commented on your post`
+      `${req.user.name} commented on your post`,
+      {
+        type: 'comment',
+        affectedDoc: req.body.post,
+        endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
+          newComment._id
+        }`,
+      }
     );
   }
   sendResponse(newComment, res, 201, { message: 'Comment Successful' });
@@ -68,7 +83,14 @@ exports.likeComment = catchAsync(async (req, res, next) => {
         await notify(
           req.user._id,
           postDoc.user,
-          `${req.user.name} liked your comment`
+          `${req.user.name} liked your comment`,
+          {
+            type: 'like',
+            affectedDoc: req.params.commentID,
+            endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
+              req.params.commentID
+            }`,
+          }
         );
       }
     }
