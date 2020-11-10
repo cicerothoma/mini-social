@@ -49,7 +49,7 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
       `${req.user.name} commented on your post`,
       {
         type: 'comment',
-        affectedDoc: req.body.post,
+        post: req.body.post,
         endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
           newComment._id
         }`,
@@ -86,7 +86,7 @@ exports.likeComment = catchAsync(async (req, res, next) => {
           `${req.user.name} liked your comment`,
           {
             type: 'like',
-            affectedDoc: req.params.commentID,
+            comment: req.params.commentID,
             endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
               req.params.commentID
             }`,
