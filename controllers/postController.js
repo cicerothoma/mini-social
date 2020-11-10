@@ -102,22 +102,21 @@ exports.likePost = catchAsync(async (req, res, next) => {
   if (!post) {
     return postError(next, `Can't find post with id: ${id}`, 401);
   }
-  likePost(post, req, res).then(async (data) => {
-    if (data.docLiked) {
-      if (String(req.user._id) !== String(post.user)) {
-        await notify(
-          req.user._id,
-          post.user,
-          `${req.user.name} liked your post`,
-          {
-            type: 'like',
-            post: post._id,
-            endPoint: `${req.protocol}://${req.get('host')}/api/v1/post/${
-              post._id
-            }`,
-          }
-        );
-      }
+  const data = await likePost(post, req, res);
+  if (data.docLiked) {
+    if (String(req.user._id) !== String(post.user)) {
+      await notify(
+        req.user._id,
+        post.user,
+        `${req.user.name} liked your post`,
+        {
+          type: 'like',
+          post: post._id,
+          endPoint: `${req.protocol}://${req.get('host')}/api/v1/post/${
+            post._id
+          }`,
+        }
+      );
     }
-  });
+  }
 });
