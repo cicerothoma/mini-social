@@ -36,7 +36,7 @@ exports.createReply = catchAsync(async (req, res, next) => {
       `${req.user.name} replied to your comment`,
       {
         type: 'reply',
-        affectedDoc: commentID,
+        comment: commentID,
         endPoint: `${req.protocol}://${req.get('host')}/api/v1/replyComments/${
           reply._id
         }`,
@@ -65,7 +65,7 @@ exports.likeReply = catchAsync(async (req, res, next) => {
           `${req.user.name} liked your reply`,
           {
             type: 'reply',
-            affectedDoc: replyID,
+            replyComment: replyID,
             endPoint: `${req.protocol}://${req.get(
               'host'
             )}/api/v1/replyComments/${replyID}`,
