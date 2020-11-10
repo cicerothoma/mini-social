@@ -7,4 +7,8 @@ router.use(authController.protect);
 
 router.route('/').get(notificationController.getUserNotification);
 
+router.route('/unread').get(notificationController.getUnreadNotifications);
+router.route('/read').get(notificationController.getReadNotifications);
+router.route('/:id/markAsRead').patch(notificationController.markAsRead);
+
 module.exports = router;

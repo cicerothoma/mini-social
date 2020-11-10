@@ -6,7 +6,7 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     }, // Notification creator
-    receiver: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Ids of the receivers of the notification
+    receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Ids of the receivers of the notification
     message: String, // any description of the notification message
     comment: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,22 +25,16 @@ const notificationSchema = new mongoose.Schema(
       enum: ['like', 'comment', 'reply'],
       message: ['type should be either like, comment or reply'],
     },
-    readBy: [
-      {
-        readerID: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-        },
-        readAt: {
-          type: Date,
-          default: Date.now,
-          immutable: true,
-        },
+    readBy: {
+      readerID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
       },
-    ],
+      readAt: Date,
+    },
     created_at: {
       type: Date,
-      default: Date.now,
+      default: Date.now(),
       immutable: true,
     },
     endPoint: String,
@@ -51,6 +45,13 @@ const notificationSchema = new mongoose.Schema(
     strict: true,
   }
 );
+
+notificationSchema.virtual('isRead').get(function () {
+  if (String(this.receiver) === String(this.readBy.readerID)) {
+    return true;
+  }
+  return false;
+});
 
 notificationSchema.pre(/^find/, function (next) {
   this.populate({
