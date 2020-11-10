@@ -19,10 +19,28 @@ exports.markAsRead = catchAsync(async (req, res, next) => {
       404
     );
   }
-  if (!notification.receiver.includes(userID)) {
+  if (String(userID) !== String(notification.receiver)) {
     return falsyData(next, `You're not allowed to read this notification`, 403);
   }
-  notification.readBy.push({ readerID: userID, readAt: Date.now() });
+  notification.readBy = { readerID: userID, readAt: Date.now() };
   await notification.update({ readBy: notification.readBy });
   sendResponse(null, res, 200, { message: 'Notification Read' });
+});
+
+exports.getUnreadNotifications = catchAsync(async (req, res, next) => {
+  const unreadNotifications = await Notification.find({
+    receiver: req.user._id,
+    readBy: { $exists: false },
+  });
+  sendResponse(unreadNotifications, res, 200, { result: true });
+});
+exports.getReadNotifications = catchAsync(async (req, res, next) => {
+  const readNotifications = await Notification.find({
+    receiver: req.user._id,
+    readBy: { $exists: true },
+    $where: function () {
+      return String(this.receiver) === String(this.readBy.readerID);
+    },
+  });
+  sendResponse(readNotifications, res, 200, { result: true });
 });
