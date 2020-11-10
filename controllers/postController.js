@@ -111,7 +111,7 @@ exports.likePost = catchAsync(async (req, res, next) => {
           `${req.user.name} liked your post`,
           {
             type: 'like',
-            affectedDoc: post._id,
+            post: post._id,
             endPoint: `${req.protocol}://${req.get('host')}/api/v1/post/${
               post._id
             }`,
