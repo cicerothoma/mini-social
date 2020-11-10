@@ -8,8 +8,17 @@ const notificationSchema = new mongoose.Schema(
     }, // Notification creator
     receiver: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Ids of the receivers of the notification
     message: String, // any description of the notification message
-    document: {
+    comment: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+    },
+    post: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+    replyComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ReplyComment',
     },
     type: {
       type: String,
@@ -42,6 +51,15 @@ const notificationSchema = new mongoose.Schema(
     strict: true,
   }
 );
+
+notificationSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'comment',
+  })
+    .populate({ path: 'post' })
+    .populate({ path: 'replyComment' });
+  next();
+});
 
 const Notification = mongoose.model(
   'Notification',
