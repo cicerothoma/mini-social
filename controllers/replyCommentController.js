@@ -56,22 +56,21 @@ exports.likeReply = catchAsync(async (req, res, next) => {
   if (!commentDoc) {
     return falsyData(next, `Can't find comment with id: ${commentID}`, 403);
   }
-  likeReplies(replyDoc, req, res).then(async (data) => {
-    if (data.docLiked) {
-      if (String(req.user._id) !== String(commentDoc.user._id)) {
-        await notify(
-          req.user._id,
-          commentDoc.user,
-          `${req.user.name} liked your reply`,
-          {
-            type: 'reply',
-            replyComment: replyID,
-            endPoint: `${req.protocol}://${req.get(
-              'host'
-            )}/api/v1/replyComments/${replyID}`,
-          }
-        );
-      }
+  const data = await likeReplies(replyDoc, req, res);
+  if (data.docLiked) {
+    if (String(req.user._id) !== String(commentDoc.user._id)) {
+      await notify(
+        req.user._id,
+        commentDoc.user,
+        `${req.user.name} liked your reply`,
+        {
+          type: 'reply',
+          replyComment: replyID,
+          endPoint: `${req.protocol}://${req.get(
+            'host'
+          )}/api/v1/replyComments/${replyID}`,
+        }
+      );
     }
-  });
+  }
 });
