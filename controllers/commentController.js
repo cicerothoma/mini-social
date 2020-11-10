@@ -77,22 +77,21 @@ exports.likeComment = catchAsync(async (req, res, next) => {
       401
     );
   }
-  likeComment(commentDoc, req, res).then(async (data) => {
-    if (data.docLiked) {
-      if (String(req.user._id) !== String(postDoc.user)) {
-        await notify(
-          req.user._id,
-          postDoc.user,
-          `${req.user.name} liked your comment`,
-          {
-            type: 'like',
-            comment: req.params.commentID,
-            endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
-              req.params.commentID
-            }`,
-          }
-        );
-      }
+  const data = await likeComment(commentDoc, req, res);
+  if (data.docLiked) {
+    if (String(req.user._id) !== String(postDoc.user)) {
+      await notify(
+        req.user._id,
+        postDoc.user,
+        `${req.user.name} liked your comment`,
+        {
+          type: 'like',
+          comment: req.params.commentID,
+          endPoint: `${req.protocol}://${req.get('host')}/api/v1/comments/${
+            req.params.commentID
+          }`,
+        }
+      );
     }
-  });
+  }
 });
