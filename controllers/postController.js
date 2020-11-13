@@ -29,7 +29,7 @@ exports.getUserCuratedPost = catchAsync(async (req, res, next) => {
   const followers = req.user.following;
   const loggedInUserID = req.user._id;
   const userCuratedPosts = Post.find({
-    $or: [{ user: { $in: followers } }, { user: loggedInUserID }],
+    $or: [{ user: loggedInUserID }, { user: { $in: followers } }],
   }).populate('comments');
   const queries = new APIFeatures(req.query, userCuratedPosts)
     .filter()
