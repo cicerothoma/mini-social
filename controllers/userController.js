@@ -54,11 +54,11 @@ exports.follow = catchAsync(async (req, res, next) => {
   }
   if (!loggedInUser.following.includes(userToFollowID)) {
     loggedInUser.following.push(userToFollowID);
-    await loggedInUser.update({
+    await loggedInUser.updateOne({
       following: loggedInUser.following,
     });
     userToFollow.followers.push(loggedInUserID);
-    await userToFollow.update({
+    await userToFollow.updateOne({
       followers: userToFollow.followers,
     });
     await notify(
@@ -78,10 +78,10 @@ exports.follow = catchAsync(async (req, res, next) => {
       userToFollow.followers.indexOf(loggedInUserID),
       1
     );
-    await loggedInUser.update({
+    await loggedInUser.updateOne({
       following: loggedInUser.following,
     });
-    await userToFollow.update({ followers: userToFollow.followers });
+    await userToFollow.updateOne({ followers: userToFollow.followers });
     await notify(
       loggedInUserID,
       userToFollowID,
