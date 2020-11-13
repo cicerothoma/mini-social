@@ -28,7 +28,7 @@ exports.createReply = catchAsync(async (req, res, next) => {
   }
   const reply = await ReplyComment.create(req.body);
   comment.replyComment.push(reply._id);
-  await comment.update({ replyComment: comment.replyComment });
+  await comment.updateOne({ replyComment: comment.replyComment });
   if (String(req.user._id) !== String(comment.user._id)) {
     await notify(
       req.user._id,
