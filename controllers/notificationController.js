@@ -23,7 +23,7 @@ exports.markAsRead = catchAsync(async (req, res, next) => {
     return falsyData(next, `You're not allowed to read this notification`, 403);
   }
   notification.readBy = { readerID: userID, readAt: Date.now() };
-  await notification.update({ readBy: notification.readBy });
+  await notification.updateOne({ readBy: notification.readBy });
   sendResponse(null, res, 200, { message: 'Notification Read' });
 });
 
