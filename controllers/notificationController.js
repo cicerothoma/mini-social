@@ -38,6 +38,8 @@ exports.getReadNotifications = catchAsync(async (req, res, next) => {
   const readNotifications = await Notification.find({
     receiver: req.user._id,
     readBy: { $exists: true },
+    // Use the commented code below instead of the $where query
+    // $expr: {$eq: ['$receiver', '$readBy.readerID']},
     $where: function () {
       return String(this.receiver) === String(this.readBy.readerID);
     },
