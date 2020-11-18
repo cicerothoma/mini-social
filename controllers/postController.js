@@ -120,3 +120,8 @@ exports.likePost = catchAsync(async (req, res, next) => {
     }
   }
 });
+
+exports.uploadFiles = catchAsync((req, res, next) => {
+  console.log('upload file middleware');
+  next();
+});
