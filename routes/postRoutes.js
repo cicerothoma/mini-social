@@ -21,7 +21,7 @@ router
 router
   .route('/')
   .get(postController.getUserCuratedPost)
-  .post(postController.createPost);
+  .post(postController.uploadFiles, postController.createPost);
 
 router
   .route('/:id')
