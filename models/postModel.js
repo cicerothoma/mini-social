@@ -23,6 +23,7 @@ const postSchema = new mongoose.Schema(
     updatedAt: Date,
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     images: [String],
+    video: String,
   },
   {
     toJSON: {
