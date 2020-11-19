@@ -1,14 +1,14 @@
 {
   "name": "mini-social-media",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Mini Social Media Application",
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
     "debug": "ndb server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Collins Thomas",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.20.0",
@@ -26,6 +26,7 @@
     "nodemailer": "^6.4.14",
     "sharp": "^0.26.0",
     "socket.io": "^2.3.0",
+    "streamifier": "^0.1.1",
     "validator": "^13.1.17"
   },
   "devDependencies": {
