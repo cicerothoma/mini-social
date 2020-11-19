@@ -7,6 +7,8 @@ const likePost = require('./../utils/like');
 const notify = require('./../utils/notify');
 const sendResponse = require('./../utils/sendResponse');
 const AppError = require('./../utils/appError');
+const uploadVideo = require('../utils/uploadVideo');
+const uploadImage = require('../utils/uploadImage');
 
 // Multer Storage Engine
 const multerStorage = multer.memoryStorage();
@@ -24,22 +26,30 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
 exports.getUploadedFiles = upload.array('files', 4);
 
-exports.uploadFilesToCloudinary = (req, res, next) => {
+exports.uploadFilesToCloudinary = catchAsync(async (req, res, next) => {
   if (req.files.length > 0) {
     const imageURLs = [];
     const videoURLs = [];
     const filesPromise = req.files.map(async (file) => {
       if (file.mimetype.includes('video')) {
-        // Write Cloudinary Video Upload Code Here [file.buffer]
-        console.log('Video File');
+        return await uploadVideo(req, file.buffer);
       } else {
-        // Write Cloudinary Image Upload Code Here [file.buffer]
-        console.log('Image File');
+        return await uploadImage(req, file.buffer);
       }
     });
+    const resolvedFiles = await Promise.all(filesPromise);
+    resolvedFiles.forEach((res) => {
+      if (res.resource_type === 'image') {
+        imageURLs.push(res.url);
+      } else {
+        videoURLs.push(res.url);
+      }
+    });
+    req.body.images = imageURLs;
+    req.body.videos = videoURLs;
   }
   next();
-};
+});
 
 exports.aliasMostLikedPost = (req, res, next) => {
   req.query = {
