@@ -1,3 +1,4 @@
+const multer = require('multer');
 const Post = require('./../models/postModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
@@ -5,6 +6,40 @@ const postError = require('./../utils/falsyData');
 const likePost = require('./../utils/like');
 const notify = require('./../utils/notify');
 const sendResponse = require('./../utils/sendResponse');
+const AppError = require('./../utils/appError');
+
+// Multer Storage Engine
+const multerStorage = multer.memoryStorage();
+
+// Multer File Filter
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.includes('image') || file.mimetype.includes('video')) {
+    return cb(null, true);
+  } else {
+    return cb(new AppError('Only Video and Images are allowed', 400), false);
+  }
+};
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.getUploadedFiles = upload.array('files', 4);
+
+exports.uploadFilesToCloudinary = (req, res, next) => {
+  if (req.files.length > 0) {
+    const imageURLs = [];
+    const videoURLs = [];
+    const filesPromise = req.files.map(async (file) => {
+      if (file.mimetype.includes('video')) {
+        // Write Cloudinary Video Upload Code Here [file.buffer]
+        console.log('Video File');
+      } else {
+        // Write Cloudinary Image Upload Code Here [file.buffer]
+        console.log('Image File');
+      }
+    });
+  }
+  next();
+};
 
 exports.aliasMostLikedPost = (req, res, next) => {
   req.query = {
@@ -119,9 +154,4 @@ exports.likePost = catchAsync(async (req, res, next) => {
       );
     }
   }
-});
-
-exports.uploadFiles = catchAsync((req, res, next) => {
-  console.log('upload file middleware');
-  next();
 });
