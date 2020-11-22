@@ -1,8 +1,34 @@
+const multer = require('multer');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const falsyData = require('./../utils/falsyData');
 const sendResponse = require('./../utils/sendResponse');
 const notify = require('./../utils/notify');
+const AppError = require('../utils/appError');
+const uploadFile = require('./../utils/uploadFile');
+
+const filterObject = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((key) => {
+    if (allowedFields.includes(key)) {
+      newObj[key] = obj[key];
+    }
+  });
+
+  return newObj;
+};
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.includes('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError(`Only Image Files Are Allowed`, 400), false);
+  }
+};
+
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -15,6 +41,9 @@ exports.createUser = (req, res, next) => {
   });
 };
 exports.updateUser = catchAsync(async (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return falsyData(next, 'Only Admins Can Access This Route', 400);
+  }
   const { id } = req.params;
   const updatedUser = await User.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -91,4 +120,61 @@ exports.follow = catchAsync(async (req, res, next) => {
       message: `${userToFollow.username} unfollowed`,
     });
   }
+});
+
+exports.getImage = upload.single('file');
+
+exports.uploadProfileImage = catchAsync(async (req, res, next) => {
+  if (req.file) {
+    const response = await uploadFile(req, req.file.buffer, {
+      folder: `${req.user._id}/profile`,
+      resource_type: 'image',
+      public_id: req.user._id,
+      overwrite: true,
+    });
+    req.body.profileImage = response.url;
+  }
+  next();
+});
+
+exports.updateProfile = catchAsync(async (req, res, next) => {
+  if (req.body.password || req.body.confirmPassword || req.body.email) {
+    return falsyData(
+      next,
+      'This route is not for password or email update. Please use "/updateMyPassword" for password update or "/sendResetEmailToken" for email reset instead',
+      401
+    );
+  }
+  const filteredUserData = filterObject(
+    req.body,
+    'profileImage',
+    'name',
+    'username',
+    'dateOfBirth',
+    'bio',
+    'phone'
+  );
+  if (req.body.profileImage) {
+    filteredUserData.profileImage = req.body.profileImage;
+  }
+  const newUser = await User.findByIdAndUpdate(req.user._id, filteredUserData, {
+    new: true,
+    runValidators: true,
+  });
+  sendResponse(newUser, res, 200, { message: 'Profile Updated Successfully' });
+});
+
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { active: false },
+    { new: true, runValidators: true }
+  );
+
+  if (!user) {
+    return falsyData(next, `Can't find user with id: ${req.user._id}`, 404);
+  }
+  sendResponse(user, res, 204, {
+    message: 'Your Account Has Been Successfully Deleted',
+  });
 });
