@@ -37,6 +37,10 @@ router
     userController.updateProfile
   );
 
+router
+  .route('/whoToFollow')
+  .get(authController.protect, userController.getUsersToFollow);
+
 router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 router

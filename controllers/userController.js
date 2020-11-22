@@ -178,3 +178,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     message: 'Your Account Has Been Successfully Deleted',
   });
 });
+
+exports.getUsersToFollow = catchAsync(async (req, res, next) => {
+  sendResponse(null, res, 200, { message: 'Work On This Later' });
+});
