@@ -63,6 +63,10 @@ const userSchema = new mongoose.Schema(
     },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    active: {
+      type: Boolean,
+      default: true,
+    },
     passwordResetTokenExpires: Date,
     passwordChangedAt: Date,
     passwordResetToken: String,
