@@ -16,10 +16,28 @@ router
   .route('/follow/:toFollowID')
   .patch(authController.protect, userController.follow);
 
-router.route('/').get(userController.getAllUsers);
+router
+  .route('/')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.getAllUsers
+  );
+
 router
   .route('/updateMyPassword')
   .patch(authController.protect, authController.updatePassword);
+
+router
+  .route('/updateMe')
+  .patch(
+    authController.protect,
+    userController.getImage,
+    userController.uploadProfileImage,
+    userController.updateProfile
+  );
+
+router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 router
   .route('/:id')
