@@ -7,8 +7,7 @@ const likePost = require('./../utils/like');
 const notify = require('./../utils/notify');
 const sendResponse = require('./../utils/sendResponse');
 const AppError = require('./../utils/appError');
-const uploadVideo = require('../utils/uploadVideo');
-const uploadImage = require('../utils/uploadImage');
+const uploadFile = require('../utils/uploadFile');
 
 // Multer Storage Engine
 const multerStorage = multer.memoryStorage();
@@ -32,9 +31,17 @@ exports.uploadFilesToCloudinary = catchAsync(async (req, res, next) => {
     const videoURLs = [];
     const filesPromise = req.files.map(async (file) => {
       if (file.mimetype.includes('video')) {
-        return await uploadVideo(req, file.buffer);
+        return await uploadFile(req, file.buffer, {
+          folder: `${req.user._id}/media`,
+          resource_type: 'video',
+          timeout: 600000,
+        });
       } else {
-        return await uploadImage(req, file.buffer);
+        return await uploadFile(req, file.buffer, {
+          folder: `${req.user._id}/media`,
+          resource_type: 'image',
+          timeout: 600000,
+        });
       }
     });
     const resolvedFiles = await Promise.all(filesPromise);
