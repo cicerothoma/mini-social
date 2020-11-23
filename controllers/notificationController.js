@@ -3,6 +3,10 @@ const sendResponse = require('./../utils/sendResponse');
 const falsyData = require('./../utils/falsyData');
 const catchAsync = require('./../utils/catchAsync');
 
+exports.addNewNotification = catchAsync(async (req, res, next) => {
+  sendResponse(null, res, 200, { message: 'Work on This Later' });
+});
+
 exports.getUserNotification = catchAsync(async (req, res, next) => {
   const userID = req.user._id;
   const notifications = await Notification.find({ receiver: userID });
@@ -38,7 +42,7 @@ exports.getReadNotifications = catchAsync(async (req, res, next) => {
   const readNotifications = await Notification.find({
     receiver: req.user._id,
     readBy: { $exists: true },
-    $expr: {$eq: ['$receiver', '$readBy.readerID']},
+    $expr: { $eq: ['$receiver', '$readBy.readerID'] },
   });
   sendResponse(readNotifications, res, 200, { result: true });
 });

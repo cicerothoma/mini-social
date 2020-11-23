@@ -5,7 +5,10 @@ const authController = require('./../controllers/authController');
 const router = express.Router();
 router.use(authController.protect);
 
-router.route('/').get(notificationController.getUserNotification);
+router
+  .route('/')
+  .get(notificationController.getUserNotification)
+  .post(notificationController.addNewNotification);
 
 router.route('/unread').get(notificationController.getUnreadNotifications);
 router.route('/read').get(notificationController.getReadNotifications);
