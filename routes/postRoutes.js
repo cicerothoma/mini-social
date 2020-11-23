@@ -12,6 +12,8 @@ router
   .route('/all')
   .get(authController.restrictTo('admin', 'user'), postController.getAllPosts);
 
+router.route('/like').get(postController.getLikedPosts);
+
 router.route('/like/:postID').patch(postController.likePost);
 
 router
