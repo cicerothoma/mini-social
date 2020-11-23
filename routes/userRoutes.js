@@ -12,6 +12,10 @@ router
   .route('/sendResetEmailToken')
   .post(authController.protect, authController.sendResetEmailToken);
 router.route('/resetEmail/:resetToken').patch(authController.resetEmail);
+
+router
+  .route('/follow')
+  .get(authController.protect, userController.getUsersToFollow);
 router
   .route('/follow/:toFollowID')
   .patch(authController.protect, userController.follow);
@@ -36,10 +40,6 @@ router
     userController.uploadProfileImage,
     userController.updateProfile
   );
-
-router
-  .route('/whoToFollow')
-  .get(authController.protect, userController.getUsersToFollow);
 
 router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
