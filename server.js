@@ -1,7 +1,11 @@
+const http = require('http');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const app = require('./app');
+
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 
 const DB = process.env.DATABASE_LOCAL;
 
@@ -16,10 +20,7 @@ mongoose
 
 const port = process.env.PORT || 5000;
 
-const server = app.listen(port, () => {
-  console.log(`App running on port ${port}`);
-});
-const io = require('socket.io')(server);
+server.listen(port, () => console.log(`App running on port ${port}`));
 
 io.on('connection', (socket) => {
   //Get the chatID of the user and join in a room of the same chatID
