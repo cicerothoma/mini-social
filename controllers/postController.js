@@ -67,6 +67,15 @@ exports.aliasMostLikedPost = (req, res, next) => {
   next();
 };
 
+exports.getLikedPosts = catchAsync(async (req, res, next) => {
+  if (!req.body.user) {
+    req.body.user = req.user._id;
+  }
+
+  const posts = await Post.find({ likes: { $in: req.body.user } });
+  sendResponse(posts, res, 200, { result: true });
+});
+
 exports.getAllPosts = catchAsync(async (req, res, next) => {
   const query = new APIFeatures(req.query, Post.find().populate('comments'))
     .filter()
