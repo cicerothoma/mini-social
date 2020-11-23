@@ -180,5 +180,37 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 exports.getUsersToFollow = catchAsync(async (req, res, next) => {
-  sendResponse(null, res, 200, { message: 'Work On This Later' });
+  // Get The Users (ID) The Logged In User Follow
+  const currentUserFollowingID = req.user.following;
+  // If The Logged In User Doesn't follow anyone then send all the users
+  if (currentUserFollowingID.length < 1) {
+    const allUsers = await User.find({ _id: { $ne: req.user._id } });
+    return sendResponse(allUsers, res, 200, { result: true });
+  }
+  // Use The ID to Get Their Data
+  const currentUserFollowingData = await User.find({
+    _id: { $in: currentUserFollowingID },
+  });
+  // Use The Data To Get The User They Follow (ID)
+  const currentUserFollowingFollowings = currentUserFollowingData
+    .filter((doc) => doc.following.length > 0)
+    .map((doc) => doc.following)
+    .flat();
+
+  // Use the ID to get their data of DB
+  let usersToFollow = await User.find({
+    $and: [
+      // Gets the recommended users that the currently logged in user doesn't follow
+      { _id: { $in: currentUserFollowingFollowings } },
+      { following: { $nin: [...currentUserFollowingID] } },
+    ],
+  });
+
+  if (usersToFollow.length < 2) {
+    usersToFollow = await User.find({
+      _id: { $nin: [...currentUserFollowingID, req.user._id] },
+    });
+  }
+
+  sendResponse(usersToFollow, res, 200, { result: true });
 });
