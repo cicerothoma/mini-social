@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const postRoute = require('./routes/postRoutes');
 const userRoute = require('./routes/userRoutes');
 const commentRoute = require('./routes/commentRoutes');
@@ -16,10 +17,24 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // MiddleWare for getting the data sent in the request body
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+
+// Form Parser (Parses data from an html form to the req.body)
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+  })
+);
 
 // Middleware for parsing cookies
 app.use(cookieParser());
+
+// Middleware for enabling CORS (Cross Origin Request Sharing)
+app.use(cors()); // Only works for simple requests (GET, POST)
+
+// Middleware for enabling CORS for non-simple request (PATCH, PUT, DELETE, request with cookies etc)
+app.options('*', cors());
 
 // Middleware for testing data
 app.use((req, res, next) => {
