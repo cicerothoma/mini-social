@@ -23,7 +23,7 @@ const multerFilter = (req, file, cb) => {
 
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
-exports.getUploadedFiles = upload.array('files', 4);
+exports.getFiles = upload.array('files', 4);
 
 exports.uploadFilesToCloudinary = catchAsync(async (req, res, next) => {
   if (req.files.length > 0) {
@@ -113,8 +113,19 @@ exports.getPost = catchAsync(async (req, res, next) => {
 });
 
 exports.createPost = catchAsync(async (req, res, next) => {
-  req.body.user = req.user._id;
+  if (!req.body.user) {
+    req.body.user = req.user._id;
+  }
   const newPost = await Post.create(req.body);
+  if (newPost.images.length >= 1 || newPost.videos.length >= 1) {
+    await notify(undefined, req.body.user, 'Your Post Is Ready', {
+      type: 'post',
+      post: newPost._id,
+      endPoint: `${req.protocol}://${req.get('host')}/api/v1/posts/${
+        newPost._id
+      }`,
+    });
+  }
   sendResponse(newPost, res, 201, { message: 'Post Created Successfully' });
 });
 
@@ -153,7 +164,7 @@ exports.deletePost = catchAsync(async (req, res, next) => {
     if (String(post.user) !== String(req.user._id)) {
       return postError(false, next, `Not authorized to delete that post`, 401);
     }
-    await Post.findByIdAndDelete(post._id);
+    await post.deleteOne();
     sendResponse(null, res, 204, { message: 'Post deleted successfully' });
   }
 });
