@@ -41,9 +41,6 @@ exports.createUser = (req, res, next) => {
   });
 };
 exports.updateUser = catchAsync(async (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return falsyData(next, 'Only Admins Can Access This Route', 400);
-  }
   const { id } = req.params;
   const updatedUser = await User.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -93,7 +90,8 @@ exports.follow = catchAsync(async (req, res, next) => {
     await notify(
       loggedInUserID,
       userToFollowID,
-      `${loggedInUser.name} followed you`
+      `${loggedInUser.name} followed you`,
+      { type: 'follow' }
     );
     sendResponse({ followed: true }, res, 200, {
       message: `${userToFollow.username} followed`,
@@ -114,7 +112,8 @@ exports.follow = catchAsync(async (req, res, next) => {
     await notify(
       loggedInUserID,
       userToFollowID,
-      `${loggedInUser.name} unfollowed you`
+      `${loggedInUser.name} unfollowed you`,
+      { type: 'follow' }
     );
     sendResponse({ unfollowed: true }, res, 200, {
       message: `${userToFollow.username} unfollowed`,
@@ -187,7 +186,7 @@ exports.getUsersToFollow = catchAsync(async (req, res, next) => {
     const allUsers = await User.find({ _id: { $ne: req.user._id } });
     return sendResponse(allUsers, res, 200, { result: true });
   }
-  // Use The ID to Get Their Data
+  // Use The ID of the user the logged in user follow to Get Their Data
   const currentUserFollowingData = await User.find({
     _id: { $in: currentUserFollowingID },
   });
@@ -197,7 +196,7 @@ exports.getUsersToFollow = catchAsync(async (req, res, next) => {
     .map((doc) => doc.following)
     .flat();
 
-  // Use the ID to get their data of DB
+  // Use the ID to get their data from DB
   let usersToFollow = await User.find({
     $and: [
       // Gets the recommended users that the currently logged in user doesn't follow
@@ -206,6 +205,7 @@ exports.getUsersToFollow = catchAsync(async (req, res, next) => {
     ],
   });
 
+  // If the recommended users result is less than 2 then suggest all the users he doesn't currently follow
   if (usersToFollow.length < 2) {
     usersToFollow = await User.find({
       _id: { $nin: [...currentUserFollowingID, req.user._id] },
