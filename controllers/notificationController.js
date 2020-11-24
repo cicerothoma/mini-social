@@ -4,7 +4,8 @@ const falsyData = require('./../utils/falsyData');
 const catchAsync = require('./../utils/catchAsync');
 
 exports.addNewNotification = catchAsync(async (req, res, next) => {
-  sendResponse(null, res, 200, { message: 'Work on This Later' });
+  const notification = await Notification.create(req.body);
+  sendResponse(notification, res, 200);
 });
 
 exports.getUserNotification = catchAsync(async (req, res, next) => {
