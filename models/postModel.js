@@ -36,6 +36,10 @@ const postSchema = new mongoose.Schema(
   }
 );
 
+// MongoDB Indexing
+
+postSchema.index({ user: -1 });
+
 // Virtual Populate
 
 postSchema.virtual('comments', {
