@@ -10,7 +10,7 @@ router.use('/:postID/comments', commentRoute);
 router.use(authController.protect);
 router
   .route('/all')
-  .get(authController.restrictTo('admin', 'user'), postController.getAllPosts);
+  .get(authController.restrictTo('admin'), postController.getAllPosts);
 
 router.route('/like').get(postController.getLikedPosts);
 
@@ -24,7 +24,7 @@ router
   .route('/')
   .get(postController.getUserCuratedPost)
   .post(
-    postController.getUploadedFiles,
+    postController.getFiles,
     postController.uploadFilesToCloudinary,
     postController.createPost
   );
