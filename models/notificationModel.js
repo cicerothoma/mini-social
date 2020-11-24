@@ -27,8 +27,8 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['like', 'comment', 'reply'],
-      message: ['type should be either like, comment or reply'],
+      enum: ['like', 'comment', 'reply', 'post', 'follow'],
+      message: ['type should be either like, post, follow comment or reply'],
     },
     readBy: {
       readerID: {
