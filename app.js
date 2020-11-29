@@ -37,10 +37,10 @@ app.use(cors()); // Only works for simple requests (GET, POST)
 app.options('*', cors());
 
 // Middleware for testing data
-app.use((req, res, next) => {
-  console.log(req.originalUrl, req.method);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(req.originalUrl, req.method);
+//   next();
+// });
 
 // Routes
 app.use('/api/v1/posts', postRoute);

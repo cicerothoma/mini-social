@@ -7,6 +7,12 @@ const app = require('./app');
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
+process.on('uncaughtException', (err) => {
+  console.log('Uncaught Exception!! Shutting Down');
+  console.log(err.name, err.message);
+  process.exit(1);
+});
+
 const DB = process.env.DATABASE_LOCAL;
 
 mongoose
@@ -44,5 +50,13 @@ io.on('connection', (socket) => {
       senderChatID: senderChatID,
       receiverChatID: receiverChatID,
     });
+  });
+});
+
+process.on('unhandledRejection', (err) => {
+  console.log('UNHANDLED REJECTION!! Closing Server then shutting down');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
   });
 });

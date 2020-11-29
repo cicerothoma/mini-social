@@ -60,7 +60,6 @@ exports.addNewComment = catchAsync(async (req, res, next) => {
 });
 
 exports.likeComment = catchAsync(async (req, res, next) => {
-  console.log(req.params);
   const postDoc = await Post.findById(req.params.postID);
   if (!postDoc) {
     return falsyData(
