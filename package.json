@@ -4,7 +4,7 @@
   "description": "A Mini Social Media Application",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "debug": "ndb server.js"
   },
   "keywords": [],
