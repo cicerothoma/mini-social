@@ -26,7 +26,7 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 exports.getFiles = upload.array('files', 4);
 
 exports.uploadFilesToCloudinary = catchAsync(async (req, res, next) => {
-  if (req.files.length > 0) {
+  if (req.files && req.files.length > 0) {
     const imageURLs = [];
     const videoURLs = [];
     const filesPromise = req.files.map(async (file) => {
