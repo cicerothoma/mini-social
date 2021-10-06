@@ -36,11 +36,15 @@ app.use(cors()); // Only works for simple requests (GET, POST)
 // Middleware for enabling CORS for non-simple request (PATCH, PUT, DELETE, request with cookies etc)
 app.options('*', cors());
 
-// Middleware for testing data
-// app.use((req, res, next) => {
-//   console.log(req.originalUrl, req.method);
-//   next();
-// });
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to Twitstagram',
+    postman_documentation_url:
+      'https://documenter.getpostman.com/view/11729266/UUy675KM',
+    about:
+      'A mini social platform inspired by Twitter and Instagram \n Users can upload photos or videos and follow other users',
+  });
+});
 
 // Routes
 app.use('/api/v1/posts', postRoute);
